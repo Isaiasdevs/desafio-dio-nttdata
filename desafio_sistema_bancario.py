@@ -64,7 +64,7 @@ while menu !='Q':
         print(f'''
             ############### EXTRATO DE MOVIMENTAÇÕES ###############
                     {extrato}
-                Saldo: {saldo:.2f}
+                \nSaldo: {saldo:.2f}
 
             #######################################################
         ''')
