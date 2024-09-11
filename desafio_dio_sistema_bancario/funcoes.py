@@ -1,8 +1,5 @@
-import sys
 
-saldo = 0
-extrato = ''
-#quantidade_saque=0
+
 usuarios = []
 contas = []
 numero_conta = 1  # Inicializando o número da conta
