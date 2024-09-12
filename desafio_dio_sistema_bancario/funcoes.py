@@ -1,5 +1,3 @@
-
-
 usuarios = []
 contas = []
 numero_conta = 1  # Inicializando o número da conta
@@ -20,22 +18,19 @@ def exibir_menu():
     ###################################################################
     ''')
     
-    # Captura e retorna a opção escolhida pelo usuário
     opcao = input('\nDigite sua opção: ').upper()
     return opcao
 
 def criar_usuario():
-    print("\n=== Criar Usuário ===")
+    print("\n=== Vamos criar seu usuário ===")
     
-    nome = input("Nome: ")
-    data_nascimento = input("Data de nascimento (dd/mm/aaaa): ")
-    cpf = input("CPF (somente números): ")
+    nome = input("Informe seu nome completo: ")
+    data_nascimento = input("Informe sua data de nascimento seguindo este modelo (dd/mm/aaaa): ")
+    cpf = input("Informe o seu CPF (somente números): ")
     
-    # Verifica se o CPF já está cadastrado para outro usuário
-    for usuario in usuarios:
-        if usuario['cpf'] == cpf:
-            print("Erro: CPF já cadastrado.")
-            return
+    if verificar_usuario(cpf):
+        print("CPF já cadastrado em nossa base.")
+        return
     
     endereco = input("Endereço (logradouro, nro, bairro, cidade/sigla estado): ")
     
@@ -49,55 +44,52 @@ def criar_usuario():
     usuarios.append(usuario)
     print(f"Usuário {nome} cadastrado com sucesso!")
 
-
 def criar_conta():
     global numero_conta
-    print("\n=== Criação de Conta ===")
+    print("\n=== Agora vamos criar sua conta ===")
     
-    cpf = input("Informe o CPF do usuário: ")
-
-    # Busca o usuário com o CPF fornecido
-    usuario_encontrado = None
-    for usuario in usuarios:
-        if usuario['cpf'] == cpf:
-            usuario_encontrado = usuario
-            break
-
+    cpf = input("Nos informe o CPF do usuário: ")
+    usuario_encontrado = verificar_usuario(cpf)
+    
     if not usuario_encontrado:
-        print("Erro: Usuário não encontrado. Cadastre o usuário primeiro.")
+        print("O usuário informado não foi encontrado. Cadastre o usuário primeiro.")
         return
-
-    # Cria a conta e associa ao usuário
+    
     nova_conta = {
-        'agencia': '0001',
+        'agencia': AGENCIA,
         'numero_conta': numero_conta,
         'usuario': usuario_encontrado
     }
-
-    # Adiciona a conta na lista global de contas
+    
     contas.append(nova_conta)
-    numero_conta += 1  # Incrementa o número da conta para a próxima conta
+    numero_conta += 1
 
     print(f"Conta {nova_conta['numero_conta']} criada com sucesso para {usuario_encontrado['nome']}!")
 
+def verificar_usuario(cpf):
+    """Verifica se um usuário com o CPF informado existe na lista de usuários."""
+    for usuario in usuarios:
+        if usuario['cpf'] == cpf:
+            return usuario
+    return None
 
-def depositar(saldo, extrato, /):
-    print("\n=== Depósito ===")
-    
-    # Solicita e valida o número da conta
-    numero_conta = input("Digite o número da conta para depósito: ")
-    conta_encontrada = None
-    
+def verificar_conta(numero_conta):
+    """Verifica se uma conta com o número informado existe na lista de contas."""
     for conta in contas:
         if conta['numero_conta'] == int(numero_conta):
-            conta_encontrada = conta
-            break
+            return conta
+    return None
+
+def depositar(saldo, extrato, /):
+    print("\n=== Você selecionou a opção de depósito ===")
+    
+    numero_conta = input("Digite o número da conta para depósito: ")
+    conta_encontrada = verificar_conta(numero_conta)
     
     if not conta_encontrada:
-        print("Erro: Conta não encontrada.")
+        print("Conta não localizada.")
         return saldo, extrato
     
-    # Solicita e valida o valor do depósito
     valor = float(input("Digite o valor do depósito: "))
     
     if valor > 0:
@@ -105,33 +97,26 @@ def depositar(saldo, extrato, /):
         extrato += f"Depósito na conta {numero_conta}: R$ {valor:.2f}\n"
         print(f"Depósito de R$ {valor:.2f} realizado com sucesso na conta {numero_conta}!")
     else:
-        print("Erro: O valor do depósito deve ser positivo.")
+        print("Valor de depósito inválido.")
     
     return saldo, extrato
 
-
 def sacar(*, saldo, valor, extrato, numero_saques, limite_saques):
-    print("\n=== Saque ===")
+    print("\n=== Você solicitou a opção de saque ===")
 
-    # Solicita e valida o número da conta
     numero_conta = input("Digite o número da conta para saque: ")
-    conta_encontrada = None
-    
-    for conta in contas:
-        if conta['numero_conta'] == int(numero_conta):
-            conta_encontrada = conta
-            break
+    conta_encontrada = verificar_conta(numero_conta)
     
     if not conta_encontrada:
         print("Erro: Conta não encontrada.")
         return saldo, extrato, numero_saques
 
     if numero_saques >= limite_saques:
-        print("Erro: Limite de saques diários atingido.")
+        print("Limite de saques diários atingido.")
     elif valor > 500:
-        print("Erro: O valor do saque não pode ser superior a R$ 500.")
+        print("O valor do saque não pode ser superior a R$ 500.")
     elif valor > saldo:
-        print("Erro: Saldo insuficiente.")
+        print("Saldo insuficiente.")
     elif valor > 0:
         saldo -= valor
         extrato += f"Saque na conta {numero_conta}: R$ {valor:.2f}\n"
@@ -142,29 +127,23 @@ def sacar(*, saldo, valor, extrato, numero_saques, limite_saques):
     
     return saldo, extrato, numero_saques
 
-
 def exibir_extrato(saldo, *, extrato):
     print("\n=== Extrato ===")
     
-    # Solicita e valida o número da conta
     numero_conta = input("Digite o número da conta para exibir o extrato: ")
-    conta_encontrada = None
-    
-    for conta in contas:
-        if conta['numero_conta'] == int(numero_conta):
-            conta_encontrada = conta
-            break
+    conta_encontrada = verificar_conta(numero_conta)
     
     if not conta_encontrada:
         print("Erro: Conta não encontrada.")
     else:
         print(f"Extrato da conta {numero_conta}:")
-        if not extrato:  # Se o extrato estiver vazio
+        if not extrato:
             print("Não foram realizadas movimentações.")
         else:
             print(extrato)
     
     print(f"\nSaldo atual: R$ {saldo:.2f}")
     print("==============================")
+
 
 
